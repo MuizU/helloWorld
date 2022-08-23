@@ -8,6 +8,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+import cors from 'cors'
 
 const log: Logger = LoggerProvider.getOrCreate({
   label: "cactus-api",
@@ -22,7 +23,7 @@ const main = async () => {
   apiServerOptions.configFile = "";
   // Enable CORS for
   apiServerOptions.authorizationProtocol = "NONE";
-  apiServerOptions.apiPort = 3000;
+  apiServerOptions.apiPort = 3001;
   apiServerOptions.cockpitPort = 3100;
   apiServerOptions.grpcPort = 5000;
   apiServerOptions.plugins = [
@@ -52,6 +53,7 @@ const main = async () => {
 };
 
 const app = express();
+app.use(cors())
 const port = process.env.PORT;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -91,7 +93,7 @@ const client = async () => {
     try{
       const {key} = req.params;
       await apiClient.delete(key);
-      res.status(200).send("Record deleted successfully");
+      res.status(200).end();
     }catch(err:any){
       res.status(404).send(err);
     }
@@ -109,7 +111,11 @@ const client = async () => {
     }
   });
 
-  app.listen(8000, () => {
+  app.get("/", (req: Request, res: Response) => {
+    log.info("Cactus: Hello World");
+    res.send("Hello World - Server!");
+  });
+  app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
   });
 };

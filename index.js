@@ -23,6 +23,7 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cactus_plugin_keychain_memory_1 = require("@hyperledger/cactus-plugin-keychain-memory");
+const cors_1 = __importDefault(require("cors"));
 const log = cactus_common_1.LoggerProvider.getOrCreate({
     label: "cactus-api",
     level: "INFO",
@@ -35,7 +36,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     apiServerOptions.configFile = "";
     // Enable CORS for
     apiServerOptions.authorizationProtocol = "NONE";
-    apiServerOptions.apiPort = 3000;
+    apiServerOptions.apiPort = 3001;
     apiServerOptions.cockpitPort = 3100;
     apiServerOptions.grpcPort = 5000;
     apiServerOptions.plugins = [
@@ -60,6 +61,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     apiServer.start();
 });
 const app = (0, express_1.default)();
+app.use((0, cors_1.default)());
 const port = process.env.PORT;
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
@@ -97,7 +99,7 @@ const client = () => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const { key } = req.params;
             yield apiClient.delete(key);
-            res.status(200).send("Record deleted successfully");
+            res.status(200).end();
         }
         catch (err) {
             res.status(404).send(err);
@@ -114,7 +116,11 @@ const client = () => __awaiter(void 0, void 0, void 0, function* () {
             res.status(404).send(err);
         }
     }));
-    app.listen(8000, () => {
+    app.get("/", (req, res) => {
+        log.info("Cactus: Hello World");
+        res.send("Hello World - Server!");
+    });
+    app.listen(port, () => {
         console.log(`Example app listening on port ${port}`);
     });
 });
